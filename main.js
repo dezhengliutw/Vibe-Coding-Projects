@@ -9,6 +9,13 @@ const el = {
   labels: document.getElementById("toggleLabels"),
   panel: document.getElementById("planetPanel"),
   tabs: document.getElementById("planetTabs"),
+  title: document.getElementById("appTitle"),
+  subtitle: document.getElementById("appSubtitle"),
+  timeLabel: document.getElementById("timeLabel"),
+  langToggle: document.getElementById("langToggle"),
+  bootWarning: document.getElementById("bootWarning"),
+  leftRail: document.querySelector(".left-rail"),
+  planetStrip: document.querySelector(".planet-strip"),
 };
 
 const scene = new THREE.Scene();
@@ -49,8 +56,71 @@ const state = {
   cityLights: true,
   selected: null,
   holdCamera: 0,
+  lang: "en",
 };
 
+
+const UI_STRINGS = {
+  en: {
+    title: "SOLAR SYSTEM EXPLORER",
+    subtitle: "Interactive Astrophysics Discovery · HD Edition",
+    orbits: "Orbits",
+    labels: "Labels",
+    time: "TIME",
+    panelKicker: "Planetary Data",
+    notes: "Discovery Notes",
+    highlights: "Highlights",
+    leftRailAria: "Visualization controls",
+    planetStripAria: "Select a planet",
+    bootWarning: "Open this with a local server, not <code>file://</code>. Example: <code>python -m http.server</code>",
+  },
+  zh: {
+    title: "太阳系探索器",
+    subtitle: "互动天体物理探索 · 高清版",
+    orbits: "轨道",
+    labels: "标签",
+    time: "时间",
+    panelKicker: "行星数据",
+    notes: "探索笔记",
+    highlights: "亮点",
+    leftRailAria: "可视化控制",
+    planetStripAria: "选择星体",
+    bootWarning: "请使用本地服务器打开，而不是 <code>file://</code>。例如：<code>python -m http.server</code>",
+  },
+};
+
+const STAT_LABEL_ZH = {
+  Diameter: "直径",
+  Surface: "表面",
+  Core: "核心",
+  Age: "年龄",
+  Gravity: "重力",
+  Rotation: "自转",
+  Day: "昼长",
+  Year: "公转周期",
+  Moons: "卫星数",
+  Mass: "质量",
+  Atmosphere: "大气",
+  "Avg Temp": "平均温度",
+};
+
+const BODY_ZH = {
+  sun: { name: "太阳", cat: "恒星", type: "G型主序星", desc: "太阳占据太阳系绝大部分质量，通过辐射与太阳风为所有行星提供能量。", note: "太阳核心通过核聚变把氢转化为氦；磁暴活动会影响近地航天器、通信与电力系统。", hi: ["太阳系光与热的来源", "日球层延伸到冥王星轨道之外"] },
+  mercury: { name: "水星", cat: "类地行星", type: "岩石行星", desc: "一颗布满陨石坑、几乎无大气的行星，昼夜温差极大。", note: "水星只有极稀薄外逸层，但在极地永久阴影陨石坑中存在水冰。", hi: ["铁核占比极高", "离太阳最近的行星"] },
+  venus: { name: "金星", cat: "类地行星", type: "岩石行星", desc: "浓密二氧化碳大气与硫酸云层造成强烈温室效应，是最炽热的行星。", note: "金星自转缓慢且为逆行自转，在其表面太阳会从西边升起。", hi: ["失控温室效应世界", "地表气压约为地球的92倍"] },
+  earth: { name: "地球", cat: "类地行星", type: "海洋世界 / 岩石行星", desc: "地球拥有液态水、活跃地质与保护性大气层，是目前已知唯一孕育生命的世界。", note: "磁场可屏蔽高能带电粒子并帮助保留大气层，也产生极光等现象。", hi: ["已知唯一有生命的行星", "极区可见明亮极光"] },
+  mars: { name: "火星", cat: "类地行星", type: "岩石行星", desc: "寒冷干燥的沙漠行星，拥有巨型火山、峡谷与古代河流痕迹。", note: "奥林匹斯山和水手号峡谷展示了火星极端而壮观的地质地貌。", hi: ["红色来自氧化铁尘土", "地表存在古代流水证据"] },
+  jupiter: { name: "木星", cat: "外行星", type: "气态巨行星", desc: "太阳系最大的行星，拥有分层云带、快速喷流与巨大的风暴系统。", note: "木星磁层极其庞大，众多卫星使它更像一个微型行星系统。", hi: ["大红斑是长期存在的巨型风暴", "伽利略卫星是重要科研目标"] },
+  saturn: { name: "土星", cat: "外行星", type: "气态巨行星", desc: "以明亮壮观的环系闻名，环由大量冰粒和岩屑组成。", note: "土卫六拥有浓厚大气层，并存在液态甲烷与乙烷湖泊。", hi: ["低密度巨行星", "环系主要由水冰构成"] },
+  uranus: { name: "天王星", cat: "外行星", type: "冰巨行星", desc: "具有甲烷雾霾与极端倾角的冰巨星，看起来像躺着绕太阳公转。", note: "其内部可能含有高压状态下的水、氨与甲烷深层结构。", hi: ["自转轴倾角约98度", "拥有微弱环系和偏移磁场"] },
+  neptune: { name: "海王星", cat: "外行星", type: "冰巨行星", desc: "遥远的深蓝色冰巨星，拥有太阳系中最快的一些行星风。", note: "风暴系统会形成并消散，高层云在大气中高速移动。", hi: ["高层大气风速极高", "海卫一可能是被捕获天体"] },
+};
+
+function isZh() { return state.lang === "zh"; }
+function uiText(key) { return (UI_STRINGS[state.lang] && UI_STRINGS[state.lang][key]) || UI_STRINGS.en[key] || key; }
+function planetText(body) { const z = isZh() ? BODY_ZH[body.key] : null; return z ? { ...body, ...z } : body; }
+function statLabelText(label) { return isZh() ? (STAT_LABEL_ZH[label] || label) : label; }
+function planetNameText(body) { return isZh() && BODY_ZH[body.key] && BODY_ZH[body.key].name ? BODY_ZH[body.key].name : body.name; }
 controls.addEventListener("start", () => {
   state.holdCamera = 0;
 });
@@ -454,7 +524,7 @@ function makeSystem(body, i) {
     moons.push({ pivot: p, orbitLine: mo, angle: p.rotation.y, speed: m.s });
   });
 
-  const lab = label(body.name);
+  const lab = label(planetNameText(body));
   const system = { body, mesh, orbit, pivot, spin, shell, atmos, cityLights, clouds, moons, label: lab, angle: pivot.rotation.y };
   mesh.userData.system = system;
   return system;
@@ -467,19 +537,19 @@ const pickables = systems.map((s) => s.mesh);
 function esc(s) { return String(s).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); }
 function statHTML([k, v]) { return `<div class="planet-stat"><span class="value">${v}</span><span class="label">${k}</span></div>`; }
 function renderPanel(sys) {
-  const b = sys.body;
+  const b = planetText(sys.body);
   el.panel.style.display = "";
   el.panel.innerHTML = `
     <div class="panel-topline">
-      <div class="panel-kicker">Planetary Data</div>
+      <div class="panel-kicker">${uiText("panelKicker")}</div>
       <div class="panel-chip" style="--chip-color:${b.sw}">${b.cat}</div>
     </div>
     <h2 class="planet-name">${b.name}</h2>
     <p class="planet-type">${b.type}</p>
     <p class="planet-description">${esc(b.desc)}</p>
-    <div class="planet-grid">${b.stats.map(statHTML).join("")}</div>
-    <section class="panel-section"><h3>Discovery Notes</h3><p>${esc(b.note)}</p></section>
-    <section class="panel-section"><h3>Highlights</h3><ul class="panel-list">${b.hi.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></section>`;
+    <div class="planet-grid">${b.stats.map(([k, v]) => statHTML([statLabelText(k), v])).join("")}</div>
+    <section class="panel-section"><h3>${uiText("notes")}</h3><p>${esc(b.note)}</p></section>
+    <section class="panel-section"><h3>${uiText("highlights")}</h3><ul class="panel-list">${b.hi.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></section>`;
 }
 
 function renderOverviewPanel() {
@@ -494,7 +564,7 @@ for (const s of systems) {
   b.className = "planet-chip-btn";
   b.dataset.key = s.body.key;
   b.style.setProperty("--swatch", s.body.sw);
-  b.innerHTML = `<span class="planet-chip-swatch"></span><span class="planet-chip-name">${s.body.name}</span>`;
+  b.innerHTML = `<span class="planet-chip-swatch"></span><span class="planet-chip-name">${planetNameText(s.body)}</span>`;
   b.addEventListener("click", () => {
     if (state.selected === s.body.key) {
       clearSelectionToOverview();
@@ -506,6 +576,31 @@ for (const s of systems) {
   tabBtns.set(s.body.key, b);
 }
 
+function updateLanguageUI() {
+  document.documentElement.lang = isZh() ? "zh-Hans" : "en";
+  if (el.title) el.title.textContent = uiText("title");
+  if (el.subtitle) el.subtitle.textContent = uiText("subtitle");
+  if (el.orbits) el.orbits.textContent = uiText("orbits");
+  if (el.labels) el.labels.textContent = uiText("labels");
+  if (el.timeLabel) el.timeLabel.textContent = uiText("time");
+  if (el.leftRail) el.leftRail.setAttribute("aria-label", uiText("leftRailAria"));
+  if (el.planetStrip) el.planetStrip.setAttribute("aria-label", uiText("planetStripAria"));
+  if (el.bootWarning && location.protocol === "file:") el.bootWarning.innerHTML = uiText("bootWarning");
+  if (el.langToggle) {
+    el.langToggle.textContent = isZh() ? "EN" : "中文";
+    el.langToggle.setAttribute("aria-label", isZh() ? "切换到英文" : "Switch to Chinese");
+  }
+  for (const s of systems) s.label.textContent = planetNameText(s.body);
+  for (const [key, btn] of tabBtns) {
+    const sys = byKey.get(key);
+    const nameEl = btn.querySelector(".planet-chip-name");
+    if (sys && nameEl) nameEl.textContent = planetNameText(sys.body);
+  }
+  if (state.selected) {
+    const sys = byKey.get(state.selected);
+    if (sys) renderPanel(sys);
+  }
+}
 function btnState(btn, on) { btn.classList.toggle("is-active", on); }
 function updateSpeed() { el.speedReadout.textContent = `${state.speed.toFixed(2)}x`; }
 function applyToggleVisuals() {
@@ -591,6 +686,7 @@ el.speed.addEventListener("input", (e) => { state.speed = Number(e.target.value)
 el.speedReadout.addEventListener("click", () => { state.speed = 1; el.speed.value = "1"; updateSpeed(); });
 el.orbits.addEventListener("click", () => { state.orbits = !state.orbits; applyToggleVisuals(); });
 el.labels.addEventListener("click", () => { state.labels = !state.labels; applyToggleVisuals(); });
+if (el.langToggle) el.langToggle.addEventListener("click", () => { state.lang = state.lang === "en" ? "zh" : "en"; updateLanguageUI(); });
 renderer.domElement.addEventListener("pointerdown", onPick);
 addEventListener("resize", resize);
 
@@ -633,5 +729,16 @@ function animate() {
 updateSpeed();
 applyToggleVisuals();
 updateTabs();
+updateLanguageUI();
 renderOverviewPanel();
 animate();
+
+
+
+
+
+
+
+
+
+

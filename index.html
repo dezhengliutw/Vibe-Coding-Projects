@@ -20,8 +20,9 @@
   <canvas id="scene"></canvas>
 
   <header class="title-block">
-    <h1>SOLAR SYSTEM EXPLORER</h1>
-    <p>Interactive Astrophysics Discovery 路 HD Edition</p>
+    <h1 id="appTitle">SOLAR SYSTEM EXPLORER</h1>
+    <p id="appSubtitle">Interactive Astrophysics Discovery 路 HD Edition</p>
+    <button id="langToggle" class="lang-switch" type="button" aria-label="Switch language">中文</button>
   </header>
 
   <aside class="left-rail" aria-label="Visualization controls">
@@ -31,7 +32,7 @@
     </div>
 
     <div class="time-module">
-      <div class="time-label">TIME</div>
+      <div id="timeLabel" class="time-label">TIME</div>
       <div class="time-slider-shell">
         <input id="speed" class="time-slider" type="range" min="0" max="10" step="0.01" value="1" />
       </div>
@@ -57,4 +58,6 @@
   <script type="module" src="main.js"></script>
 </body>
 </html>
+
+
 
