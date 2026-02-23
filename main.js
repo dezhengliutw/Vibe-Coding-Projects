@@ -122,6 +122,26 @@ function isZh() { return state.lang === "zh"; }
 function uiText(key) { return (UI_STRINGS[state.lang] && UI_STRINGS[state.lang][key]) || UI_STRINGS.en[key] || key; }
 function planetText(body) { const z = isZh() ? BODY_ZH[body.key] : null; return z ? { ...body, ...z } : body; }
 function statLabelText(label) { return isZh() ? (STAT_LABEL_ZH[label] || label) : label; }
+function statValueText(value) {
+  const text = String(value);
+  if (!isZh()) return text;
+
+  let out = text;
+  out = out.replace(/(\d+(?:\.\d+)?)h\s*(\d+(?:\.\d+)?)(?:m|min)\b/gi, (_, h, m) => `${h}\u5c0f\u65f6${m}\u5206\u949f`);
+  out = out.replace(/(~)?\s*(\d+(?:\.\d+)?)B\s*yrs?\b/gi, (_, approx, n) => {
+    const scaled = Number(n) * 10;
+    let num = String(scaled);
+    if (Number.isFinite(scaled) && !Number.isInteger(scaled)) {
+      num = num.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+    }
+    return `${approx || ""}${num}\u4ebf\u5e74`;
+  });
+  out = out.replace(/\byrs?\b/gi, "\u5e74");
+  out = out.replace(/\bC\b/g, "\u00B0C");
+  out = out.replace(/\bkm\b/g, "\u516c\u91cc");
+  out = out.replace(/\b(?:Earth\s+)?d\b/g, "\u5929");
+  return out;
+}
 function planetNameText(body) { return isZh() && BODY_ZH[body.key] && BODY_ZH[body.key].name ? BODY_ZH[body.key].name : body.name; }
 function isPhoneViewport() { return innerWidth <= 640; }
 function syncPanelVisibility() {
@@ -553,7 +573,7 @@ const byKey = new Map(systems.map((s) => [s.body.key, s]));
 const pickables = systems.map((s) => s.mesh);
 
 function esc(s) { return String(s).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); }
-function statHTML([k, v]) { return `<div class="planet-stat"><span class="value">${v}</span><span class="label">${k}</span></div>`; }
+function statHTML([k, v]) { return `<div class="planet-stat"><span class="value">${statValueText(v)}</span><span class="label">${k}</span></div>`; }
 function renderPanel(sys) {
   const b = planetText(sys.body);
   el.panel.style.display = "";
