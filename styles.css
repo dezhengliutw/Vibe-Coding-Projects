@@ -877,3 +877,57 @@ body::after {
     font-size: 0.62rem;
   }
 }
+
+/* Chinese UI font/fallback tuning */
+html[lang^="zh"] .title-block h1,
+html[lang^="zh"] .title-block p,
+html[lang^="zh"] .ui-pill,
+html[lang^="zh"] .time-label,
+html[lang^="zh"] .planet-chip-name,
+html[lang^="zh"] .planet-name,
+html[lang^="zh"] .planet-type,
+html[lang^="zh"] .panel-kicker,
+html[lang^="zh"] .panel-section h3,
+html[lang^="zh"] .planet-stat .label,
+html[lang^="zh"] .label,
+html[lang^="zh"] .lang-switch {
+  font-family: "Noto Sans SC", "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
+}
+
+html[lang^="zh"] .title-block h1 {
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+html[lang^="zh"] .title-block p,
+html[lang^="zh"] .planet-type,
+html[lang^="zh"] .panel-kicker,
+html[lang^="zh"] .planet-stat .label,
+html[lang^="zh"] .planet-chip-name,
+html[lang^="zh"] .time-label {
+  letter-spacing: 0.04em;
+}
+
+html[lang^="zh"] .label {
+  letter-spacing: 0.02em;
+}
+
+/* Keep language switch above the left control rail */
+.title-block {
+  z-index: 5;
+}
+
+.lang-switch {
+  position: fixed;
+  top: calc(0.95rem + env(safe-area-inset-top));
+  right: calc(0.95rem + env(safe-area-inset-right));
+  z-index: 6;
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .lang-switch {
+    top: calc(0.55rem + env(safe-area-inset-top));
+    right: calc(0.65rem + env(safe-area-inset-right));
+  }
+}
