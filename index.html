@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discovery Solar System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.161.0/build/three.module.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <header class="title-block">
+    <h1>SOLAR SYSTEM EXPLORER</h1>
+    <p>Interactive Astrophysics Discovery · HD Edition</p>
+  </header>
+
+  <aside class="left-rail" aria-label="Visualization controls">
+    <div class="rail-buttons">
+      <button id="toggleOrbits" class="ui-pill is-active" type="button">Orbits</button>
+      <button id="toggleLabels" class="ui-pill is-active" type="button">Labels</button>
+    </div>
+
+    <div class="time-module">
+      <div class="time-label">TIME</div>
+      <div class="time-slider-shell">
+        <input id="speed" class="time-slider" type="range" min="0" max="10" step="0.01" value="1" />
+      </div>
+      <div id="speedReadout" class="time-readout">1.00x</div>
+    </div>
+  </aside>
+
+  <aside id="planetPanel" class="planet-panel" aria-live="polite"></aside>
+
+  <nav class="planet-strip" aria-label="Select a planet">
+    <div id="planetTabs" class="planet-tabs"></div>
+  </nav>
+
+  <div id="bootWarning" class="boot-warning" hidden>
+    Open this with a local server, not <code>file://</code>. Example: <code>python -m http.server</code>
+  </div>
+
+  <script>
+    if (location.protocol === "file:") {
+      document.getElementById("bootWarning").hidden = false;
+    }
+  </script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
