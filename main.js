@@ -124,9 +124,9 @@ function planetText(body) { const z = isZh() ? BODY_ZH[body.key] : null; return 
 function statLabelText(label) { return isZh() ? (STAT_LABEL_ZH[label] || label) : label; }
 function statValueText(value) {
   const text = String(value);
-  if (!isZh()) return text;
-
   let out = text;
+  out = out.replace(/\bC\b/g, "\u00B0C");
+  if (!isZh()) return out;
   out = out.replace(/(\d+(?:\.\d+)?)h\s*(\d+(?:\.\d+)?)(?:m|min)\b/gi, (_, h, m) => `${h}\u5c0f\u65f6${m}\u5206\u949f`);
   out = out.replace(/(~)?\s*(\d+(?:\.\d+)?)B\s*yrs?\b/gi, (_, approx, n) => {
     const scaled = Number(n) * 10;
@@ -137,7 +137,6 @@ function statValueText(value) {
     return `${approx || ""}${num}\u4ebf\u5e74`;
   });
   out = out.replace(/\byrs?\b/gi, "\u5e74");
-  out = out.replace(/\bC\b/g, "\u00B0C");
   out = out.replace(/\bkm\b/g, "\u516c\u91cc");
   out = out.replace(/\b(?:Earth\s+)?d\b/g, "\u5929");
   return out;
