@@ -16,6 +16,7 @@ const el = {
   bootWarning: document.getElementById("bootWarning"),
   leftRail: document.querySelector(".left-rail"),
   planetStrip: document.querySelector(".planet-strip"),
+  mobileInfoToggle: document.getElementById("mobileInfoToggle"),
 };
 
 const scene = new THREE.Scene();
@@ -57,6 +58,7 @@ const state = {
   selected: null,
   holdCamera: 0,
   lang: "en",
+  panelHidden: false,
 };
 
 
@@ -121,6 +123,22 @@ function uiText(key) { return (UI_STRINGS[state.lang] && UI_STRINGS[state.lang][
 function planetText(body) { const z = isZh() ? BODY_ZH[body.key] : null; return z ? { ...body, ...z } : body; }
 function statLabelText(label) { return isZh() ? (STAT_LABEL_ZH[label] || label) : label; }
 function planetNameText(body) { return isZh() && BODY_ZH[body.key] && BODY_ZH[body.key].name ? BODY_ZH[body.key].name : body.name; }
+function isPhoneViewport() { return innerWidth <= 640; }
+function syncPanelVisibility() {
+  const hasSelection = Boolean(state.selected);
+  const mobile = isPhoneViewport();
+  if (!hasSelection) {
+    el.panel.classList.remove("panel-collapsed-mobile");
+    el.panel.style.display = "none";
+    if (el.mobileInfoToggle) el.mobileInfoToggle.hidden = true;
+    return;
+  }
+  el.panel.style.display = "";
+  const collapsed = mobile && state.panelHidden;
+  el.panel.classList.toggle("panel-collapsed-mobile", collapsed);
+  if (el.mobileInfoToggle) el.mobileInfoToggle.hidden = !(mobile && collapsed);
+}
+
 controls.addEventListener("start", () => {
   state.holdCamera = 0;
 });
@@ -539,22 +557,31 @@ function statHTML([k, v]) { return `<div class="planet-stat"><span class="value"
 function renderPanel(sys) {
   const b = planetText(sys.body);
   el.panel.style.display = "";
-  el.panel.innerHTML = `
+  el.panel.innerHTML =     `
     <div class="panel-topline">
       <div class="panel-kicker">${uiText("panelKicker")}</div>
       <div class="panel-chip" style="--chip-color:${b.sw}">${b.cat}</div>
+      <button id="mobilePanelClose" class="panel-close-btn" type="button" aria-label="Close information panel">&times;</button>
     </div>
     <h2 class="planet-name">${b.name}</h2>
     <p class="planet-type">${b.type}</p>
     <p class="planet-description">${esc(b.desc)}</p>
     <div class="planet-grid">${b.stats.map(([k, v]) => statHTML([statLabelText(k), v])).join("")}</div>
     <section class="panel-section"><h3>${uiText("notes")}</h3><p>${esc(b.note)}</p></section>
-    <section class="panel-section"><h3>${uiText("highlights")}</h3><ul class="panel-list">${b.hi.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></section>`;
+    <section class="panel-section"><h3>${uiText("highlights")}</h3><ul class="panel-list">${b.hi.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></section>`; 
+  const closeBtn = el.panel.querySelector("#mobilePanelClose");
+  if (closeBtn) closeBtn.addEventListener("click", () => {
+    if (!isPhoneViewport()) return;
+    state.panelHidden = true;
+    syncPanelVisibility();
+  });
+  syncPanelVisibility();
 }
 
 function renderOverviewPanel() {
   el.panel.innerHTML = "";
-  el.panel.style.display = "none";
+  state.panelHidden = false;
+  syncPanelVisibility();
 }
 
 const tabBtns = new Map();
@@ -599,6 +626,8 @@ function updateLanguageUI() {
   if (state.selected) {
     const sys = byKey.get(state.selected);
     if (sys) renderPanel(sys);
+  } else {
+    syncPanelVisibility();
   }
 }
 function btnState(btn, on) { btn.classList.toggle("is-active", on); }
@@ -621,6 +650,7 @@ function select(key) {
   if (!s) return;
   state.selected = key;
   state.holdCamera = 0.9;
+  state.panelHidden = false;
   updateTabs();
   renderPanel(s);
   applyToggleVisuals();
@@ -629,6 +659,7 @@ function select(key) {
 function clearSelectionToOverview() {
   state.selected = null;
   state.holdCamera = 0.9;
+  state.panelHidden = false;
   updateTabs();
   applyToggleVisuals();
   renderOverviewPanel();
@@ -680,6 +711,8 @@ function resize() {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  if (!isPhoneViewport()) state.panelHidden = false;
+  syncPanelVisibility();
 }
 
 el.speed.addEventListener("input", (e) => { state.speed = Number(e.target.value); updateSpeed(); });
@@ -687,6 +720,7 @@ el.speedReadout.addEventListener("click", () => { state.speed = 1; el.speed.valu
 el.orbits.addEventListener("click", () => { state.orbits = !state.orbits; applyToggleVisuals(); });
 el.labels.addEventListener("click", () => { state.labels = !state.labels; applyToggleVisuals(); });
 if (el.langToggle) el.langToggle.addEventListener("click", () => { state.lang = state.lang === "en" ? "zh" : "en"; updateLanguageUI(); });
+if (el.mobileInfoToggle) el.mobileInfoToggle.addEventListener("click", () => { state.panelHidden = false; syncPanelVisibility(); });
 renderer.domElement.addEventListener("pointerdown", onPick);
 addEventListener("resize", resize);
 

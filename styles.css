@@ -931,3 +931,86 @@ html[lang^="zh"] .label {
     right: calc(0.65rem + env(safe-area-inset-right));
   }
 }
+
+.panel-close-btn {
+  display: none;
+  margin-left: auto;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(227, 237, 255, 0.95);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mobile-info-fab[hidden] {
+  display: none !important;
+}
+
+.mobile-info-fab {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .planet-panel {
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .planet-panel.panel-collapsed-mobile {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0.75rem);
+  }
+
+  .panel-close-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    padding: 0;
+    font-size: 1rem;
+    border-color: rgba(94, 154, 255, 0.2);
+    background: rgba(7, 15, 35, 0.72);
+    color: rgba(214, 233, 255, 0.95);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  }
+
+  .mobile-info-fab {
+    position: fixed;
+    right: calc(0.7rem + env(safe-area-inset-right));
+    bottom: calc(5.1rem + env(safe-area-inset-bottom));
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.42rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(89, 171, 255, 0.28);
+    background: rgba(7, 15, 36, 0.84);
+    color: rgba(173, 225, 255, 0.98);
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    cursor: pointer;
+  }
+
+  .mobile-info-fab::before {
+    content: "i";
+    display: inline-grid;
+    place-items: center;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    background: radial-gradient(circle at 35% 30%, #c7f4ff 0 30%, #54cbff 48%, #198cff 100%);
+    color: #021226;
+    font-weight: 700;
+    font-size: 0.7rem;
+    line-height: 1;
+    box-shadow: 0 0 10px rgba(83, 202, 255, 0.28);
+  }
+}
